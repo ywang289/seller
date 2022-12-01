@@ -194,6 +194,150 @@ def search():
 
     return json_list
 
+
+@app.route("/seller/show_item", methods=['GET', 'POST'])
+def show_item():
+    if request.method == 'POST':
+        data = json.loads(request.get_data())
+        email = data['email']
+        try:
+            sql = "SELECT m.MID, m.Name, m.Price, m.RemainingAmount, m.Description, m.Picture1 FROM Provides p, Merchandises m WHERE p.email = '{}' and p.MID = m.MID".format(email)
+            result = db.session.execute(sql).fetchall()
+        except Exception as err:
+            return {"message": "input is wrong"}
+        json_list=[]
+        for row in result:
+            json_list.append([x for x in row])       
+
+    return json_list
+
+
+
+@app.route("/seller/insert_item", methods=['GET', 'POST'])
+def insert_item():
+    response = ""
+    if request.method == 'POST':
+        data = json.loads(request.get_data())
+
+        email = data['email']
+        name = data['name'],
+        price = data['price'],
+        remaining_amount = data['remaining_amount'],
+        description = data['description'],
+        picture = data['picture']
+
+        #compute the next mid
+        try:
+            sql= "SELECT max(mid) FROM Merchandises"
+            result = db.session.execute(sql)
+        except Exception as err:
+            return {"state": False,"message": "error! input error"}
+        prev_id = result[1]
+        curr_id = prev_id+1
+
+        try:
+            sql= "INSERT INTO Merchandises VALUES ('{}', '{}', '{}', '{}', '{}');".format(curr_id,name, price, remaining_amount, description, picture)
+            db.session.execute(sql)
+        except Exception as err:
+            return {"state": False,"message": "error! input error"}
+
+        try:
+            sql= "INSERT INTO Provides VALUES ('{}', '{}');".format(email, curr_id)
+            db.session.execute(sql)
+        except Exception as err:
+            return {"state": False,"message": "error! input error"}
+
+        #######for test#######
+        sql = 'select * from Merchandises'
+        result = db.session.execute(sql)
+        print(result.fetchall())
+        #######################
+            
+        response = {"state": True,"message": "insert item successfully"}
+       
+    return response
+
+@app.route("/seller/update_item", methods=['GET', 'POST'])
+def update_item():
+    response = ""
+    if request.method == 'POST':
+        data = json.loads(request.get_data())
+
+        email = data['email']
+        mid = data['mid']
+        name = data['name'],
+        price = data['price'],
+        remaining_amount = data['remaining_amount'],
+        description = data['description'],
+        picture = data['picture']
+
+        #check if email own mid
+        try:
+            sql = "SELECT * FROM Provides WHERE Email = '{}' and MID = '{}';".format(email, mid)
+            result = db.session.execute(sql).fetchall[0][0]
+        except Exception as err:
+            return {"state": False,"message": "error! input error"}
+        if result > 0:
+            try:
+                sql= "UPDATE Merchandises SET Name = '{}', Price = '{}', RemainingAmount = '{}', Description = '{}', Picture1 = '{}' WHERE mid = '{}';".format(name, price, remaining_amount, description, picture, mid)
+                db.session.execute(sql)
+            except Exception as err:
+                return {"state": False,"message": "error! input error"}
+        else:
+            response = {"state": False,"message": "error! this is not your item"}
+            
+
+        #######for test#######
+        sql = 'select * from Merchandises'
+        result = db.session.execute(sql)
+        print(result.fetchall())
+        #######################
+            
+        response = {"state": True,"message": "update item successfully"}
+       
+    return response
+
+@app.route("/seller/delete_item", methods=['GET', 'POST'])
+def delete_item():
+    response = ""
+    if request.method == 'POST':
+        data = json.loads(request.get_data())
+
+        email = data['email']
+        mid = data['mid']
+
+        ######TODO: check if email own mid
+        try:
+            sql = "SELECT * FROM Provides WHERE Email = '{}' and MID = '{}';".format(email, mid)
+            result = db.session.execute(sql).fetchall[0][0]
+        except Exception as err:
+            return {"state": False,"message": "error! input error"}
+        if result > 0:
+            try:
+                sql= "DELETE FROM Provides WHERE mid = '{}';".format(mid)
+                db.session.execute(sql)
+            except Exception as err:
+                return {"state": False,"message": "error! input error"}
+
+            try:
+                sql= "DELETE FROM Merchandises WHERE mid = '{}';".format(mid)
+                db.session.execute(sql)
+            except Exception as err:
+                return {"state": False,"message": "error! input error"}
+        else:
+            response = {"state": False,"message": "error! this is not your item"}
+
+
+        #######for test#######
+        sql = 'select * from Merchandises'
+        result = db.session.execute(sql)
+        print(result.fetchall())
+        #######################
+            
+        response = {"state": True,"message": "delete item successfully"}
+       
+    return response
+
 @app.route("/people/<email>", methods=["GET"])
 def get_customer_by_email(email):
     
