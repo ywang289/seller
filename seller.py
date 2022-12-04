@@ -337,20 +337,23 @@ def delete_item():
         ######TODO: check if email own mid
         try:
             sql = "SELECT * FROM Provides WHERE Email = '{}' and MID = '{}';".format(email, mid)
-            result = db.session.execute(sql).fetchall[0][0]
+            result = db.session.execute(sql).fetchall()[0][0]
         except Exception as err:
+            print(err,1)
             return {"state": False,"message": "error! input error"}
-        if result > 0:
+        if len(result) > 0:
             try:
                 sql= "DELETE FROM Provides WHERE mid = '{}';".format(mid)
                 db.session.execute(sql)
             except Exception as err:
+                print(err,2)
                 return {"state": False,"message": "error! input error"}
 
             try:
                 sql= "DELETE FROM Merchandises WHERE mid = '{}';".format(mid)
                 db.session.execute(sql)
             except Exception as err:
+                print(err,3)
                 return {"state": False,"message": "error! input error"}
         else:
             response = {"state": False,"message": "error! this is not your item"}
