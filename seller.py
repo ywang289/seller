@@ -106,12 +106,13 @@ def customer_modify_password():
         email = data['email']
         oldpwd = data['currPw']
         newpwd = data['modifiedPw']
+        print(data)
 
         try:
             sql = "SELECT * FROM Sellers where Email = '{}' AND Pwd = '{}'".format(email, oldpwd)
             result = db.session.execute(sql).fetchone()
         except Exception as err:
-            return {"message": "error! change password error"}
+            return {"message": "error! change password error","state":False}
 
         if result :
             stored_password= result[2]
@@ -120,16 +121,16 @@ def customer_modify_password():
                 sql = "UPDATE Sellers SET Pwd = '{}' where Email = '{}'".format(newpwd, email)
                 db.session.execute(sql)
             except Exception as err:
-                return {"message": "error! change password error"}
+                return {"message": "error! change password error","state":False}
             try:
                 sql = 'select * from Sellers'
                 result = db.session.execute(sql)
                 print(result.fetchall())
             except Exception as err:
-                return {"message": "error! change password error"}
-            msg = "password modified successfully"
+                return {"message": "error! change password error","state":False}
+            msg = {"message":"password modified successfully","state":True}
         else:
-            msg = "old password unmatch"
+            msg = {"message":"old password unmatch","state":False}
 
         return msg
 
@@ -147,16 +148,16 @@ def customer_modify_information():
             sql = "UPDATE Sellers SET Name = '{}', address = '{}'  where Email = '{}'".format(username, address, email)
             db.session.execute(sql)
         except Exception as err:
-            return {"message": "error! change information error"}
+            return {"message": "error! change information error","state":False}
         
         try:
             sql = 'select * from Sellers'
             result = db.session.execute(sql)
             print(result.fetchall())
         except Exception as err:
-            return {"message": "error! change information error"}
+            return {"message": "error! change information error","state":False}
         
-        msg = "information modified successfully"
+        msg = {"message":"information modified successfully","state":True}
 
         return msg
 
@@ -180,14 +181,14 @@ def search():
             result = db.session.execute(sql).fetchall()
             print("incre")
           except Exception as err:
-            return {"message": "input is wrong"}
+            return {"message": "input is wrong","state":False}
          
         else:
           try:
             sql = "SELECT m.MID, m.Name, m.Price, m.RemainingAmount, m.Description, m.Picture1, m.Picture2, m.Picture3 FROM Merchandises m WHERE m.Description LIKE '%{}%' AND m.Price >= {} AND m.Price <= {} ORDER BY m.Price ASC".format(item, low_price, high_price)
             result = db.session.execute(sql).fetchall()
           except Exception as err:
-            return {"message": "input is wrong"}
+            return {"message": "input is wrong","state":False}
 
         for row in result:
             json_list.append([x for x in row])       
