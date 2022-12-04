@@ -236,7 +236,7 @@ def insert_item():
         curr_id = prev_id+1
 
         try:
-            sql= "INSERT INTO Merchandises VALUES ('{}', '{}', '{}', '{}', '{}');".format(curr_id,name, price, remaining_amount, description, picture)
+            sql= "INSERT INTO Merchandises VALUES ('{}', '{}', '{}', '{}', '{}', '{}');".format(curr_id, name, price, remaining_amount, description, picture)
             db.session.execute(sql)
         except Exception as err:
             return {"state": False,"message": "error! input error"}
@@ -274,15 +274,42 @@ def update_item():
         #check if email own mid
         try:
             sql = "SELECT * FROM Provides WHERE Email = '{}' and MID = '{}';".format(email, mid)
-            result = db.session.execute(sql).fetchall[0][0]
+            result = db.session.execute(sql).fetchall()[0][0]
         except Exception as err:
             return {"state": False,"message": "error! input error"}
         if result > 0:
+            # try:
+                # sql= "UPDATE Merchandises SET Name = '{}', Price = '{}', RemainingAmount = '{}', Description = '{}', Picture1 = '{}' WHERE mid = '{}';".format(name, price, remaining_amount, description, picture, mid)
+                # db.session.execute(sql)
+
+                # db.session.execute('UPDATE Merchandises SET Name = (%s), Price = (%s), RemainingAmount = (%s), Description = (%s), Picture1 = (%s) WHERE mid = (%s)', name, price, remaining_amount, description, picture, mid)
+
             try:
-                sql= "UPDATE Merchandises SET Name = '{}', Price = '{}', RemainingAmount = '{}', Description = '{}', Picture1 = '{}' WHERE mid = '{}';".format(name, price, remaining_amount, description, picture, mid)
+                sql= "DELETE FROM Provides WHERE mid = '{}';".format(mid)
                 db.session.execute(sql)
             except Exception as err:
-                return {"state": False,"message": "error! input error"}
+                return {"state": False,"message": "error! delete Provides error"}
+
+            try:
+                sql= "DELETE FROM Merchandises WHERE mid = '{}';".format(mid)
+                db.session.execute(sql)
+            except Exception as err:
+                return {"state": False,"message": "error! delete Merchandises error"}
+
+            try:
+            sql= "INSERT INTO Merchandises VALUES ('{}', '{}', '{}', '{}', '{}', '{}');".format(mid, name, price, remaining_amount, description, picture)
+            db.session.execute(sql)
+        except Exception as err:
+            return {"state": False,"message": "error! insert Merchandises error"}
+
+        try:
+            sql= "INSERT INTO Provides VALUES ('{}', '{}');".format(email, mid)
+            db.session.execute(sql)
+        except Exception as err:
+            return {"state": False,"message": "error! insert provides error"}
+
+            # except Exception as err:
+            #    return {"state": False,"message": "error! input error"}
         else:
             response = {"state": False,"message": "error! this is not your item"}
             
