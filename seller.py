@@ -220,23 +220,23 @@ def insert_item():
         data = json.loads(request.get_data())
 
         email = data['email']
-        name = data['name'],
-        price = data['price'],
-        remaining_amount = data['remaining_amount'],
-        description = data['description'],
+        name = data['name']
+        price = data['price']
+        remaining_amount = data['remaining_amount']
+        description = data['description']
         picture = data['picture']
 
         #compute the next mid
         try:
             sql= "SELECT max(mid) FROM Merchandises"
-            result = db.session.execute(sql)
+            result = db.session.execute(sql).fetchone()[0]
         except Exception as err:
             return {"state": False,"message": "error! input error"}
-        prev_id = result[1]
+        prev_id = result
         curr_id = prev_id+1
 
         try:
-            sql= "INSERT INTO Merchandises VALUES ('{}', '{}', '{}', '{}', '{}', '{}');".format(curr_id, name, price, remaining_amount, description, picture)
+            sql= 'INSERT INTO Merchandises VALUES ("{}","{}","{}","{}","{}","{}","{}","{}");'.format(curr_id, name, price, remaining_amount, description, picture,None,None)
             db.session.execute(sql)
         except Exception as err:
             return {"state": False,"message": "error! input error"}
@@ -265,19 +265,20 @@ def update_item():
 
         email = data['email']
         mid = data['mid']
-        name = data['name'],
-        price = data['price'],
-        remaining_amount = data['remaining_amount'],
-        description = data['description'],
+        name = data['name']
+        price = data['price']
+        remaining_amount = data['remaining_amount']
+        description = data['description']
         picture = data['picture']
 
         #check if email own mid
         try:
             sql = "SELECT * FROM Provides WHERE Email = '{}' and MID = '{}';".format(email, mid)
-            result = db.session.execute(sql).fetchall()[0][0]
+            result = db.session.execute(sql).fetchall()[0]
         except Exception as err:
+            print(err)
             return {"state": False,"message": "error! input error"}
-        if result > 0:
+        if len(result) > 0:
             # try:
                 # sql= "UPDATE Merchandises SET Name = '{}', Price = '{}', RemainingAmount = '{}', Description = '{}', Picture1 = '{}' WHERE mid = '{}';".format(name, price, remaining_amount, description, picture, mid)
                 # db.session.execute(sql)
@@ -297,7 +298,7 @@ def update_item():
                 return {"state": False,"message": "error! delete Merchandises error"}
 
             try:
-                sql= "INSERT INTO Merchandises VALUES ('{}', '{}', '{}', '{}', '{}', '{}');".format(mid, name, price, remaining_amount, description, picture)
+                sql= "INSERT INTO Merchandises VALUES ('{}', '{}', '{}', '{}', '{}', '{}','{}','{}');".format(mid, name, price, remaining_amount, description, picture,None,None)
                 db.session.execute(sql)
             except Exception as err:
                 return {"state": False,"message": "error! insert Merchandises error"}
