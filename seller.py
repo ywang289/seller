@@ -297,16 +297,16 @@ def update_item():
                 return {"state": False,"message": "error! delete Merchandises error"}
 
             try:
-            sql= "INSERT INTO Merchandises VALUES ('{}', '{}', '{}', '{}', '{}', '{}');".format(mid, name, price, remaining_amount, description, picture)
-            db.session.execute(sql)
-        except Exception as err:
-            return {"state": False,"message": "error! insert Merchandises error"}
+                sql= "INSERT INTO Merchandises VALUES ('{}', '{}', '{}', '{}', '{}', '{}');".format(mid, name, price, remaining_amount, description, picture)
+                db.session.execute(sql)
+            except Exception as err:
+                return {"state": False,"message": "error! insert Merchandises error"}
 
-        try:
-            sql= "INSERT INTO Provides VALUES ('{}', '{}');".format(email, mid)
-            db.session.execute(sql)
-        except Exception as err:
-            return {"state": False,"message": "error! insert provides error"}
+            try:
+                sql= "INSERT INTO Provides VALUES ('{}', '{}');".format(email, mid)
+                db.session.execute(sql)
+            except Exception as err:
+                return {"state": False,"message": "error! insert provides error"}
 
             # except Exception as err:
             #    return {"state": False,"message": "error! input error"}
