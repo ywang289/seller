@@ -237,7 +237,7 @@ def insert_item():
         curr_id = prev_id+1
 
         try:
-            sql= 'INSERT INTO Merchandises VALUES ("{}","{}","{}","{}","{}","{}","{}","{}");'.format(curr_id, name, price, remaining_amount, description, picture,None,None)
+            sql= 'INSERT INTO Merchandises VALUES ("{}","{}","{}","{}","{}","{}",null,null);'.format(curr_id, name, price, remaining_amount, description, picture)
             db.session.execute(sql)
         except Exception as err:
             return {"state": False,"message": "error! input error"}
@@ -369,6 +369,47 @@ def delete_item():
         response = {"state": True,"message": "delete item successfully"}
        
     return response
+
+# {items: dictionary {mid, numbers}}
+# data format from backend to frontend:
+# 		{response: success or fail}
+#{"items":{"1":"5", "10":"2"}}
+@app.route('/order/check_amount', methods=['POST'])
+def place_order():
+    response={}
+    if request.method == 'POST':
+        data = json.loads(request.get_data())
+        item= data['items']
+        
+        for (mid, numbers) in item.items():
+            
+            try:
+                sql="SELECT RemainingAmount FROM Merchandises WHERE mid = '{}'".format(mid)
+                remaining_numbers=db.session.execute(sql).fetchone()
+                print(remaining_numbers[0])
+
+            except Exception as err:
+                print("larger")
+                return {"message": "error! first iteration","state":False}
+
+            if remaining_numbers[0]< int(numbers):
+                print(remaining_numbers[0])
+                response["message"]="larger than remaining number"
+                response['state']=False
+                return response
+
+        for (mid, numbers) in item.items():
+            try:
+                sql="UPDATE Merchandises SET RemainingAmount = RemainingAmount - '{}' WHERE mid = '{}' ".format(numbers,mid)
+                db.session.execute(sql) 
+            except Exception as err:
+                print("second")
+                return {"message": "error! second iteration ","state":False}
+
+        response["message"]= True
+        response['state']= True
+    return response
+        
 
 @app.route("/people/<email>", methods=["GET"])
 def get_customer_by_email(email):
