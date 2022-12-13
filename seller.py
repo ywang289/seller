@@ -66,6 +66,35 @@ def register():
        
     return response
 
+@app.route('/seller/googlelogin', methods=['GET', 'POST'])
+def google_login():
+    
+    if request.method == 'POST':
+        data = json.loads(request.get_data())
+        username = data['username']
+        email = data['email']
+        
+        try:
+            sql = "SELECT * FROM Sellers where email = '{}' ".format(email)
+            result = db.session.execute(sql).fetchone()
+        except Exception as err:
+            return {"state": False, "message": "error! input error"}
+        
+        if result :
+            print("successfully")
+            response= {"state": True, "message":"login successfully"}
+            
+        else:
+            try:
+                sql= "INSERT INTO Sellers VALUES ('{}', '{}', null, null);".format(email,username)
+                db.session.execute(sql)
+            except Exception as err:
+                return {"state": False,"message": "error! input error"}
+
+            response= {"state": True, "message": "register and login successfully"}
+        
+    return response
+
 #{ "password":"0002", "email": "wg@gmail.com"}
 @app.route('/seller/login', methods=['GET', 'POST'])
 def login():
