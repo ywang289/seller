@@ -283,7 +283,7 @@ def insert_item():
         print(result.fetchall())
         #######################
             
-        response = {"state": True,"message": "insert item successfully"}
+        response = {"state": True,"message": "insert item successfully", "mid": curr_id}
        
     return response
 
@@ -402,18 +402,16 @@ def delete_item():
 # {items: dictionary {mid, numbers}}
 # data format from backend to frontend:
 # 		{response: success or fail}
-#{"items":{"1":"5", "10":"2"}}
+# {"email":"wg@gmail.com", "timestamp":"2022-12-11 17:30:00","items":[{"mid":"1","amount":"1"}, {"mid":"10","amount":"2"}]}
 @app.route('/order/check_amount', methods=['POST'])
 def place_order():
     response={}
     if request.method == 'POST':
         data = json.loads(request.get_data())
-        item= data['items']
-        
-        for (mid, numbers) in item.items():
-            
+        items= data['items']
+        for i in range(len(items)):
             try:
-                sql="SELECT RemainingAmount FROM Merchandises WHERE mid = '{}'".format(mid)
+                sql="SELECT RemainingAmount FROM Merchandises WHERE mid = '{}'".format(items[i]['mid'])
                 remaining_numbers=db.session.execute(sql).fetchone()
                 print(remaining_numbers[0])
 
@@ -421,15 +419,15 @@ def place_order():
                 print("larger")
                 return {"message": "error! first iteration","state":False}
 
-            if remaining_numbers[0]< int(numbers):
+            if remaining_numbers[0]< int(items[i]['amount']):
                 print(remaining_numbers[0])
                 response["message"]="larger than remaining number"
                 response['state']=False
                 return response
 
-        for (mid, numbers) in item.items():
+        
             try:
-                sql="UPDATE Merchandises SET RemainingAmount = RemainingAmount - '{}' WHERE mid = '{}' ".format(numbers,mid)
+                sql="UPDATE Merchandises SET RemainingAmount = RemainingAmount - '{}' WHERE mid = '{}' ".format(items[i]['amount'],items[i]['mid'])
                 db.session.execute(sql) 
             except Exception as err:
                 print("second")
