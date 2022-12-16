@@ -19,11 +19,27 @@ app.config['SQLALCHEMY_DATABASE_URI']='mysql+pymysql://admin:zy112612@e6156-1.cu
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN']=True
 db=SQLAlchemy(app)
 
-#测试连上
-with app.app_context():
-    sql = 'select * from Sellers'
-    result = db.session.execute(sql)
-    print(result.fetchall())
+@app.before_request
+def check_login():
+    if request.path == '/seller/login':
+        data = json.loads(request.get_data())
+        password = data['password']
+        email = data['email']
+        
+        try:
+            sql = "SELECT * FROM Sellers where email = '{}' ".format(email)
+            result = db.session.execute(sql).fetchone()
+        except Exception as err:
+            return {"state": False, "message": "error! input error"}
+        if result:
+            stored_password= result[2]
+            if stored_password != password:
+                
+                print("unmatch")
+                return {"state": False,"message":"password unmatch"}
+               
+        else:
+            return {"state": False, "message": "please register"}
 
 
 @app.route('/', methods=['GET'])
@@ -96,36 +112,22 @@ def google_login():
     return response
 
 #{ "password":"0002", "email": "wg@gmail.com"}
-@app.route('/seller/login', methods=['GET', 'POST'])
-def login():
+@app.route('/seller/login',methods=['GET','POST'])
+def login(): 
+    data = json.loads(request.get_data())
     
-    if request.method == 'POST':
-        data = json.loads(request.get_data())
-        password = data['password']
-        email = data['email']
-        
-        try:
-            sql = "SELECT * FROM Sellers where email = '{}' ".format(email)
-            result = db.session.execute(sql).fetchone()
-        except Exception as err:
+    email = data['email']
+    try:
+        sql = "SELECT * FROM Sellers where email = '{}' ".format(email)
+        result = db.session.execute(sql).fetchone()
+    except Exception as err:
             return {"state": False, "message": "error! input error"}
-        
-        if result :
-            stored_username= result[1]
-            stored_password= result[2]
-            stored_address= result[3]
-            print(stored_username)
-            if stored_password == password:
-                print("successfully")
-                response= {"state": True, "message":"login successfully", "username": stored_username, "address": stored_address}
-            else:
-                print("unmatch")
-                response= {"state": False,"message":"password unmatch"}
-        else:
-            print("please register")
-            response= {"state": False, "message": "you need to register firstly"}
-        
-    return response
+    print("successfully")
+    username= result[1]
+    address= result[3]
+
+    return {"state": True, "message":"login successfully", "username": username, "address": address}
+
 
 #{ "currPw":"0002", "email": "wg@gmail.com", "modifiedPw": "0003"}
 @app.route('/seller/modifyPassword', methods=['GET', 'POST'])
@@ -192,7 +194,7 @@ def customer_modify_information():
 
 @app.route("/customer/search", methods=['GET', 'POST'])
 def search():
-    rsp=""
+    
     if request.method == 'POST':
         data = json.loads(request.get_data())
        
