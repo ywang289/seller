@@ -243,6 +243,31 @@ def show_item():
 
     return json_list
 
+@app.route("/mid/get_name", methods=['GET', 'POST'])
+def get_name():
+    json_list=[]
+    if request.method == 'POST':
+        data = json.loads(request.get_data())
+        details = data['data']
+        for detail in details:
+            mid= detail["mid"]
+            amount= detail["amount"]
+            print (mid)
+            print(amount)
+            try:
+                sql = "SELECT m.mid, m.name FROM Merchandises m WHERE m.mid ='{}'".format(mid)
+                result = db.session.execute(sql).fetchone()
+            except Exception as err:
+                return {"message": "input is wrong"}
+            print(result)
+            print(result[1])
+            answer={"name": result[1], "mid": mid, "amount": amount}
+
+        
+            json_list.append(answer)       
+
+    return {"state": True, "data": json_list}
+
 
 
 @app.route("/seller/insert_item", methods=['GET', 'POST'])
