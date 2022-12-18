@@ -82,7 +82,7 @@ def register():
        
     return response
 
-@app.route('/seller/googlelogin', methods=['GET', 'POST'])
+@app.route('/seller/googleLogin', methods=['GET', 'POST'])
 def google_login():
     
     if request.method == 'POST':
@@ -310,7 +310,7 @@ def insert_item():
         print(result.fetchall())
         #######################
             
-        response = {"state": True,"message": "insert item successfully", "mid": curr_id}
+        response = {"state": True,"message": "insert item successfully", "mid": curr_id, "name": name}
        
     return response
 
