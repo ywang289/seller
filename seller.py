@@ -4,6 +4,9 @@ from flask_cors import CORS
 import json
 from datetime import datetime
 
+from smartystreets_python_sdk import StaticCredentials, exceptions, ClientBuilder
+from smartystreets_python_sdk.us_street import Lookup
+
 
 app=Flask(__name__)
 CORS(app)
@@ -40,6 +43,40 @@ def check_login():
                
         else:
             return {"state": False, "message": "please register"}
+
+
+@app.before_request
+def run():
+    if request.path == '/seller/register':
+        auth_id = "c832f79c-cc29-3a15-c118-51733a6b5929"
+        auth_token = "CoGbY7DbR8qNdUPu3aZh"
+        data = json.loads(request.get_data())
+        address = data['address']
+        zipcode= data["zipcode"]
+       
+
+        credentials = StaticCredentials(auth_id, auth_token)
+
+        client = ClientBuilder(credentials).build_us_street_api_client()
+       
+        lookup = Lookup()
+        
+        lookup.street = address
+        lookup.zipcode = zipcode
+        
+
+        try:
+            client.send_lookup(lookup)
+        except exceptions.SmartyException as err:
+            print(err)
+            return {"message": "input error", "state": False}
+
+        result = lookup.result
+
+        if not result:
+            print("No candidates. This means the address is not valid.")
+            return {"message": "invalid address", "state": False}
+    
 
 
 @app.route('/', methods=['GET'])
