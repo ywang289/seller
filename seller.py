@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import json
 from datetime import datetime
+import requests
+
 
 from smartystreets_python_sdk import StaticCredentials, exceptions, ClientBuilder
 from smartystreets_python_sdk.us_street import Lookup
@@ -22,6 +24,18 @@ app.config['SQLALCHEMY_DATABASE_URI']='mysql+pymysql://admin:zy112612@e6156-1.cu
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN']=True
 db=SQLAlchemy(app)
 
+def OKResponse(version, content):
+    return buildheader(version, " 200 OK", str(len(content))) + content
+
+
+def NotResponse(version, content):
+    return buildheader(version, " 404 Not Found", str(len(content))) + content
+
+def buildheader(version, status, length):
+    header = version + status + "\r\n"
+    header += "Content-Type: text/plain\r\n"
+    header += "Content-Length: " + length + "\r\n\r\n"
+    return header
 @app.before_request
 def check_login():
     if request.path == '/seller/login':
@@ -46,6 +60,14 @@ def check_login():
 
 
 @app.before_request
+# def email2():
+#     data = json.loads(request.get_data())
+#     username = data['username']
+#     email= data["email"]
+#     # print(username)
+#     sellers_check = requests.post("https://00xi30tpb2.execute-api.us-east-1.amazonaws.com/test/helloworld", data=json.dumps({"username":username,  "email": email}))
+
+        
 def run():
     if request.path == '/seller/register':
         auth_id = "c832f79c-cc29-3a15-c118-51733a6b5929"
@@ -76,12 +98,43 @@ def run():
         if not result:
             print("No candidates. This means the address is not valid.")
             return {"message": "invalid address", "state": False}
+
+
+@app.after_request
+def af3(response):
+    if request.path == '/seller/register':
+    # print(request.environ.get('SERVER_PROTOCOL'))
+    # print(len((response.data.decode('utf-8').split(":"))))
+    # print(json.loads(response.get_data())["state"])
+    # if response.data.decode('utf-8').split(":")[2][1] == 't':
+        if json.loads(response.get_data())["state"] :
+            data=json.loads(request.get_data())
+            print(data)
+            username = data['username']
+            email= data["email"]
+            # print(username)
+            sellers_check = requests.post("https://00xi30tpb2.execute-api.us-east-1.amazonaws.com/test/helloworld", data=json.dumps({"username":username,  "email": email}))
+
+    return response
+    
+
+# @app.after_request
+# def email(response):
+#     if request.path == '/seller/register':
+#         print(response)
+#         # data=request.get_data()
+       
+        # username = data['username']
+        # email= data["email"]
+        # sellers_check = requests.post("https://00xi30tpb2.execute-api.us-east-1.amazonaws.com/test/helloworld", data=json.dumps({"username":username,  "email": email}))
+
     
 
 
 @app.route('/', methods=['GET'])
 def home():
-    return 'Hello World!'
+   
+    return "hello world"
 
 
 #{"username":"ywang", "password":"0002", "email": "wg@gmail.com", "address": "400w"}
