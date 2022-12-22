@@ -445,7 +445,7 @@ def update_item():
                 return {"state": False,"message": "error! delete Merchandises error"}
 
             try:
-                sql= "INSERT INTO Merchandises VALUES ('{}', '{}', '{}', '{}', '{}', '{}','{}','{}');".format(mid, name, price, remaining_amount, description, picture,None,None)
+                sql= "INSERT INTO Merchandises VALUES ('{}', '{}', '{}', '{}', '{}', '{}',null,null);".format(mid, name, price, remaining_amount, description, picture)
                 db.session.execute(sql)
             except Exception as err:
                 return {"state": False,"message": "error! insert Merchandises error"}
